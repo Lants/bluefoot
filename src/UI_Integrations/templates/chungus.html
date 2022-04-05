@@ -6,6 +6,7 @@
         to print out relevant song details. We need to figure out how to dynamically update displays.
         Also need to place the divs properly. Desired test configuration is side-by-side.  -->
 
+
 {% block content %}
     <div class="row">
         <h1>Chungus</h1>
@@ -20,6 +21,8 @@
                         <div class="form-group">
                                 <input type="submit" name="display-preset" value="1">
                                 <input type="submit" name="display-preset" value="2">
+                                <input type="submit" name="scroll-action" value="Down 0">
+                                <input type="submit" name="scroll-action" value="Up 0">
                         </div>
                     </legend>
                 </fieldset>
@@ -29,6 +32,7 @@
         {% include "preset_conditionals.html" %}
 
     </div>
+    
     
 {% endblock content%}
 
