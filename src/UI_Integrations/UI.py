@@ -16,6 +16,7 @@ from forms import registerform,Loginform
 from turbo_flask import Turbo
 from datetime import datetime, timedelta
 from time import sleep
+from flask_socketio import SocketIO, send, emit
 import threading
 
 app = Flask(__name__)
@@ -24,6 +25,7 @@ app = Flask(__name__)
 #   OTHERWISE THIS KEY IS USELESS FOR PREVENTING SECURITY RISKS
 app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
 turbo = Turbo(app)
+socketio = SocketIO(app)
 
 def test_url(self):
     with app.app_context(), app.test_request_context():
@@ -39,6 +41,11 @@ test_data = [
         'content': 'data 1'
     }
 ]
+
+preset = {
+    'id': 1,
+    'iframes': ['frame-0']
+}
 
 # Home page route
 @app.route("/")
@@ -65,17 +72,39 @@ def smol():
 
 
 # Chungus page route
-@app.route("/chungus")
+@app.route("/chungus", methods=['POST', 'GET'])
 def chungus():
+    if request.method == 'POST':
+        # Handle display preset request (turbo-flask)
+        if 'display-preset' in request.form.keys():
+            print("Display-Preset Action POST received")
+            if request.form['display-preset'] == '1':
+                preset['id'] = 1
+                print("Preset 1")
+                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
+            elif request.form['display-preset'] == '2':
+                preset['id'] = 2
+                print("Preset 2")
+                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
+        
+        # Handle scroll action request (SocketIO)
+        elif 'scroll-action' in request.form.keys():
+            tokens = request.form['scroll-action'].split()
+            tokens[-1] = "frame-" + tokens[-1]
+            print("Scroll Action POST received: " + str(tokens))
+            
+            socketio.emit('pdf-scroll-event', tokens, broadcast=True)
+
     return render_template("chungus.html", title='Chungus')
+
 #login page route
 @app.route("/login")
-def Login():
+def login():
     form = Loginform()
     return render_template("login.html", title='login',form = form)
 
 @app.route("/register")
-def Register():
+def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
 
@@ -101,6 +130,7 @@ def inject_data():
     dynamic_vars['chungus_current_time'] = datetime.now().strftime("%H:%M:%S")
     dynamic_vars['spotify_data'] = spotify_data
     dynamic_vars['test_data'] = test_data
+    dynamic_vars['preset'] = preset
 
     return dynamic_vars
 
@@ -118,7 +148,19 @@ def update_chungus_d1():
 def before_first_request():
     threading.Thread(target=update_chungus_d1).start()
 
+####################### SocketIO handlers ###############################
+
+@socketio.on('message')
+def handle_msg(msg):
+    print('Msg: ' + msg)
+    send(msg, broadcast=True) # broadcast off to respond to sender only instead
+
+@socketio.on('chungus-ready')
+def handle_chungus(msg):
+    print('Message: ' + msg)
+    socketio.emit('chungus-init', preset['iframes'], broadcast=True)
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
+    socketio.run(app)
