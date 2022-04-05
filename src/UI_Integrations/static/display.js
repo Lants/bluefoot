@@ -1,13 +1,14 @@
 
 window.onload = function() {
     var webpage = window.location.href;
+    console.log("Page Loaded: " + webpage);
     if (webpage.indexOf('chungus') != -1) {
         chungusInit();
     }
 }
 
 function chungusInit() {
-    console.log("Page Loaded: Chungus");
+    console.log("Page Init: Chungus");
     var socket = io.connect('http://127.0.0.1:5000');
     socket.on('connect', function() {
         socket.emit("chungus-ready", 'Chungus: User has connected.');
