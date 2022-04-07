@@ -1,10 +1,14 @@
 
-window.onload = function() {
+function bodyOnload() {
     var webpage = window.location.href;
     console.log("Page Loaded: " + webpage);
     if (webpage.indexOf('chungus') != -1) {
         chungusInit();
     }
+}
+
+function iframeOnload() {
+    bodyOnload();
 }
 
 function chungusInit() {
