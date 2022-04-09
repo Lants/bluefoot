@@ -5,6 +5,7 @@
 
 import smbus
 import time
+import hw_api
 
 class BrightnessSensor:
 
@@ -95,12 +96,6 @@ class BrightnessSensor:
     FLAG_CONV_R = 0x20
     FLAG_CONV_B = 0x30
 
-    # Brightness adjustment constants
-    STEP_SIZE = 135
-    MIN_BRIGHTNESS = 67
-    MAX_BRIGHTNESS = 255
-    SMOOTH_STEP = 10
-
     # Initializes brightness sensor to default configurations:
     # RGB detection and 10k sampling rate, maximum infrared filtering, no interrupts
     def __init__(self):
@@ -119,7 +114,18 @@ class BrightnessSensor:
     
     # Returns value of green register
     def read_green(self) -> (int):
-        return (self.bus.read_word_data(self.DEVICE_ADDR, self.GREEN_L))
+        return (self.bus.read_word_data(self.DEVICE_ADDR, self.GREEN_L))             
+
+class BrightnessAdjuster:
+    STEP_SIZE = 135
+    MIN_BRIGHTNESS = 67
+    MAX_BRIGHTNESS = 255
+    SMOOTH_STEP = 20
+    BTN_ID = 22
+    AUTO = True
+
+    def __init__(self):
+        auto_adjust = True
 
     # Returns current brightness value
     def get_brightness(self):
@@ -136,80 +142,128 @@ class BrightnessSensor:
     # Sets brightness of screen based on current values detected by RGB sensor
     # Value will be between MIN_BRIGHTNESS + 2 and MAX_BRIGHTNESS
     # Does not update incrementally; values will jump sharply if sudden change in brightness
-    def auto_update(self):
+    def auto_update(self, sensor):
         # Get sum of all brightness values
-        sum = self.read_blue()
-        sum += self.read_red()
-        sum += self.read_green()
+        sum = sensor.read_blue()
+        sum += sensor.read_red()
+        sum += sensor.read_green()
         # Determine current chunk
         chunk = (int) (sum / self.STEP_SIZE) + 1
         # Determine new brightness value
         new_brightness = self.MIN_BRIGHTNESS + (chunk << 1)
         if (new_brightness > self.MAX_BRIGHTNESS):
             new_brightness = self.MAX_BRIGHTNESS
+        
         # Write new brightness value
-        self.write_brightness(new_brightness)
-    
+        self.write_brightness(new_brightness)   
+
     # Sets brightness of screen based on current values detected by RGB sensor
     # Value will be between MIN_BRIGHTNESS + 2 and MAX_BRIGHTNESS
     # Updates incrementally
-    def auto_update_smooth(self):
-        while (1):
-            # Get sum of all brightness values
-            sum = self.read_blue()
-            sum += self.read_red()
-            sum += self.read_green()
-            # Determine current chunk
-            chunk = (int) (sum / self.STEP_SIZE) + 1
-            # Determine goal brightness value
-            goal_brightness = self.MIN_BRIGHTNESS + (chunk * 2)
-            if (goal_brightness > self.MAX_BRIGHTNESS):
-                goal_brightness = self.MAX_BRIGHTNESS
-            # Increment or decrement actual brightness value as needed
-            cur = int(self.get_brightness())
-            if (cur - goal_brightness > self.SMOOTH_STEP):
-                self.write_brightness(cur-self.SMOOTH_STEP)
-            elif (goal_brightness - cur > self.SMOOTH_STEP):
-                self.write_brightness(cur+self.SMOOTH_STEP)
-            else:
-                self.write_brightness(goal_brightness)
-            time.sleep(0.5)
+    def auto_update_smooth(self, sensor):
+        # Get sum of all brightness values
+        sum = sensor.read_blue()
+        sum += sensor.read_red()
+        sum += sensor.read_green()
+        # Determine current chunk
+        chunk = (int) (sum / self.STEP_SIZE) + 1
+        # Determine goal brightness value
+        goal_brightness = self.MIN_BRIGHTNESS + (chunk * 2)
+        if (goal_brightness > self.MAX_BRIGHTNESS):
+            goal_brightness = self.MAX_BRIGHTNESS
+        # Increment or decrement actual brightness value as needed
+        cur = int(self.get_brightness())
+        if (cur - goal_brightness > self.SMOOTH_STEP):
+            self.write_brightness(cur-self.SMOOTH_STEP)
+        elif (goal_brightness - cur > self.SMOOTH_STEP):
+            self.write_brightness(cur+self.SMOOTH_STEP)
+        else:
+            self.write_brightness(goal_brightness)
     
-    def test():
-        sensor = BrightnessSensor()
-        cont = "y"
-        while (cont == "y"):
-            print(sensor.read_blue())
-            print(sensor.read_red())
-            print(sensor.read_green())
-            print(sensor.get_brightness())
-            print("enter next value")
-            new_brightness = input()
-            sensor.write_brightness(new_brightness)
-            print("continue? y/n")
-            cont = input()
-        sensor.write_brightness(128)                    # reset brightness before exiting
+    # Final brightness function
+    # Toggles between auto and manual adjustment
+    # Uses yellow button to toggle
+    # Uses rotary encoder to increment / decrement
+    def brightness_adjustment(self, sensor):
 
-    def test_values():
-        sensor = BrightnessSensor()
-        for i in range(20):
-            print(str(i) + " blue: " + str(sensor.read_blue()) + " red: " + str(sensor.read_red()) + " green: " + str(sensor.read_green()))
-            time.sleep(0.2)
+        # Toggles between auto and manual adjustment
+        def toggle(channel):
+            if (channel == self.BTN_ID):
+                if (self.AUTO == True):
+                    self.AUTO = False
+                else:
+                    self.AUTO = True
+        
+        button = hw_api.Button()
+        button.setup_callback(toggle)
 
-    def test_auto_update():
-        sensor = BrightnessSensor()
+        # Increments brightness if rotated clockwise
+        # Decrements brightness if rotated counterclockwise
+        def enc(dir):
+            if (self.AUTO == False):
+                cur = int(self.get_brightness())
+                if (dir == hw_api.RotState.CW):
+                    new_brightness = cur + self.SMOOTH_STEP
+                    if (new_brightness > self.MAX_BRIGHTNESS):
+                        self.write_brightness(self.MAX_BRIGHTNESS)
+                    else:
+                        self.write_brightness(new_brightness)
+                else:
+                    new_brightness = cur - self.SMOOTH_STEP
+                    if (new_brightness < 0):
+                        self.write_brightness(0)
+                    else:
+                        self.write_brightness(new_brightness)
+
+        encoder = hw_api.RotEnc()
+        encoder.setup_callback(enc)
+
         while (1):
-            sensor.auto_update()
-            time.sleep(1.0)
+            if (self.AUTO == True):
+                # Auto-updates brightness
+                self.auto_update_smooth(sensor)
+                time.sleep(0.5)
 
-    def final_auto_update_smooth():
-        sensor = BrightnessSensor()
-        sensor.auto_update_smooth()
-            
+def test():
+    sensor = BrightnessSensor()
+    adjust = BrightnessAdjuster()
+    cont = "y"
+    while (cont == "y"):
+        print(sensor.read_blue())
+        print(sensor.read_red())
+        print(sensor.read_green())
+        print(adjust.get_brightness())
+        print("enter next value")
+        new_brightness = input()
+        adjust.write_brightness(new_brightness)
+        print("continue? y/n")
+        cont = input()
+    adjust.write_brightness(128)                    # reset brightness before exiting
+
+def test_values():
+    sensor = BrightnessSensor()
+    for i in range(20):
+        print(str(i) + " blue: " + str(sensor.read_blue()) + " red: " + str(sensor.read_red()) + " green: " + str(sensor.read_green()))
+        time.sleep(0.2)
+
+def test_auto_update():
+    sensor = BrightnessSensor()
+    adjust = BrightnessAdjuster()
+    while (1):
+        adjust.auto_update(sensor)
+        time.sleep(1.0)
+
+def test_auto_update_smooth():
+    sensor = BrightnessSensor()
+    adjust = BrightnessAdjuster()
+    while (1):
+        adjust.auto_update_smooth(sensor)
+        time.sleep(0.5)
+
+def brightness_final():
+    sensor = BrightnessSensor()
+    adjust = BrightnessAdjuster()
+    while (1):
+        adjust.brightness_adjustment(sensor)
     
-#BrightnessSensor.test()
-#BrightnessSensor.test_values()
-#BrightnessSensor.test_auto_update()
-BrightnessSensor.final_auto_update_smooth()
-
-# sudo chmod a+w /sys/class/backlight/10-0045/brightness
+brightness_final()
