@@ -57,6 +57,16 @@ def upload():
 
     return render_template("upload.html")
 
+@app.route("/spotify")
+def spotify():
+
+    return render_template("spotify.html")
+
+@app.route("/about")
+def about():
+
+    return render_template("about.html")
+
 
 @app.context_processor
 def inject_load():

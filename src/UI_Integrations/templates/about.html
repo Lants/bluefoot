@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+
+	<!--<img src="{{url_for('static', filename='kyle.jpeg')}}" width="400px" height="400px" alt=''/>
+
+
+
+	<p>The Bluefoot team seeks to offer a smart, interactive workspace with added display realestate.</p>
+
+    <p>Our efforts would not be possible without the help and guidance of our late friend and team member, Kyle Neil. Kyle was an accomplished student and computer hardware enthusiast who will be remembered by his kindness, enthusiasm, and invaluable expertise. The Bluefoot project is dedicated to him.
+    </p>-->
+    <h1 align="center"><hr>About Project Bluefoot<hr></h1>
+
+    <figure class="thumbnail">
+	  <img id=img-1 src="{{url_for('static', filename='kyle.jpeg')}}" alt="" height="400px" width="400px" />
+	  <figcaption >The Bluefoot team seeks to offer a smart, interactive workspace with added display realestate. Our efforts would not be possible without the help and guidance of our late friend and team member, Kyle Neil. Kyle was an accomplished student and computer hardware enthusiast who will be remembered for his kindness, enthusiasm, and invaluable expertise. The Bluefoot project is dedicated to him.</figcaption>
+	  <br>
+	</figure>
+
+{% endblock content %}
