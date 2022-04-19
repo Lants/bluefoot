@@ -10,7 +10,9 @@ if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'd':
         for i in range(0, 10):
             requests.post(url, data_down)
+        print("scrolled down")
 
     if len(sys.argv) == 2 and sys.argv[1] == 'u':
         for i in range(0, 10):
             requests.post(url, data_up)
+        print("scrolled up")

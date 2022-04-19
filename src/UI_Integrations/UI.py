@@ -75,6 +75,7 @@ def smol():
 @app.route("/chungus", methods=['POST', 'GET'])
 def chungus():
     if request.method == 'POST':
+        print(str(request.form.keys()))
         # Handle display preset request (turbo-flask)
         if 'display-preset' in request.form.keys():
             print("Display-Preset Action POST received")
