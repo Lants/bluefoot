@@ -260,10 +260,10 @@ def test_auto_update_smooth():
         adjust.auto_update_smooth(sensor)
         time.sleep(0.5)
 
-def brightness_final():
+""" def brightness_final():
     sensor = BrightnessSensor()
     adjust = BrightnessAdjuster()
     while (1):
         adjust.brightness_adjustment(sensor)
     
-brightness_final()
+brightness_final() """
