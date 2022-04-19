@@ -186,17 +186,6 @@ class BrightnessAdjuster:
     # Uses rotary encoder to increment / decrement
     def brightness_adjustment(self, sensor):
 
-        # Toggles between auto and manual adjustment
-        def toggle(channel):
-            if (channel == self.BTN_ID):
-                if (self.AUTO == True):
-                    self.AUTO = False
-                else:
-                    self.AUTO = True
-        
-        button = hw_api.Button()
-        button.setup_callback(toggle)
-
         # Increments brightness if rotated clockwise
         # Decrements brightness if rotated counterclockwise
         def enc(dir):
@@ -219,7 +208,7 @@ class BrightnessAdjuster:
         encoder.setup_callback(enc)
 
         while (1):
-            if (self.AUTO == True):
+            if (self.AUTO):
                 # Auto-updates brightness
                 self.auto_update_smooth(sensor)
                 time.sleep(0.5)
