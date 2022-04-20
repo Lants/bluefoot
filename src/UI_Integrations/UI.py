@@ -47,6 +47,8 @@ preset = {
     'iframes': ['frame-0']
 }
 
+savestate = ["hi"]
+
 # Home page route
 @app.route("/")
 @app.route("/home")
@@ -94,9 +96,26 @@ def chungus():
             tokens[-1] = "frame-" + tokens[-1]
             print("Scroll Action POST received: " + str(tokens))
             
+            # TODO: Change broadcast to a named group when sessions are implemented
             socketio.emit('pdf-scroll-event', tokens, broadcast=True)
 
     return render_template("chungus.html", title='Chungus')
+
+# Display testing page route
+@app.route("/display_testing", methods=['POST', 'GET'])
+def display():
+    if request.method == 'POST':
+        print(str(request.form.keys()))
+
+        # Handle scroll action request (SocketIO)
+        if 'scroll-action' in request.form.keys():
+            tokens = request.form['scroll-action'].split()
+            print("Scroll Action POST received: " + str(tokens))
+
+            # TODO: Change broadcast to a named group when sessions are implemented
+            socketio.emit('pdf-scroll-event', tokens, broadcast=True)
+
+    return render_template("display_testing.html", title="Display Testing")
 
 #login page route
 @app.route("/login")
@@ -109,7 +128,7 @@ def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
 
-# Set global data (be careful... this is necessary for avoiding javascript,
+# Set global data (be careful... this is necessary for minimizing javascript,
 #   but global variables can be dangerous/messy)
 @app.context_processor
 def inject_data():
@@ -125,13 +144,14 @@ def inject_data():
         'time_elapsed': str(timedelta(seconds=72)), # Replace 72 with spotify_API_retrieve.song_length or whatever
         'length': str(timedelta(seconds=212)), # Replace 212 with however many seconds long the song is
         }
-]
+    ]
 
     # Add dictionaries entries for dynamic data here
     dynamic_vars['chungus_current_time'] = datetime.now().strftime("%H:%M:%S")
     dynamic_vars['spotify_data'] = spotify_data
     dynamic_vars['test_data'] = test_data
     dynamic_vars['preset'] = preset
+    dynamic_vars['savestate'] = savestate
 
     return dynamic_vars
 
@@ -151,15 +171,26 @@ def before_first_request():
 
 ####################### SocketIO handlers ###############################
 
-@socketio.on('message')
+@socketio.on("message")
 def handle_msg(msg):
     print('Msg: ' + msg)
     send(msg, broadcast=True) # broadcast off to respond to sender only instead
 
-@socketio.on('chungus-ready')
+@socketio.on("chungus-ready")
 def handle_chungus(msg):
     print('Message: ' + msg)
-    socketio.emit('chungus-init', preset['iframes'], broadcast=True)
+    socketio.emit("chungus-init", preset['iframes'])
+
+@socketio.on("display-testing-ready")
+def handle_display_testing(msg):
+    print("Message: " + msg)
+    socketio.emit("display-init", [1, render_template("display_presets/preset_1.html")])
+
+@socketio.on("display-request-template")
+def handle_template_request(msg):
+    print("Message: " + str(msg))
+    response = render_template("display_presets/" + msg['uri'])
+    socketio.emit("display-template-response", {'content': response, 'type':msg['type'], 'row': msg['row'], 'col': msg['col']})
 
 
 if __name__ == '__main__':

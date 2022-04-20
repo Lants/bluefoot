@@ -8,6 +8,7 @@ body {
   background: #fafafa;
   color: #333333;
   margin-top: 5rem;
+  height: calc(100vh - 5rem);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -18,6 +19,23 @@ iframe {
   max-width: 100%;
   width: 100%;
   height: inherit;
+}
+
+main {
+  height: inherit;
+}
+
+.one-row {
+  height: 100%;
+}
+
+.two-rows {
+  height: 50%;
+}
+
+.show-border {
+  border-style: dashed;
+  border-color: #0a426a48;
 }
 
 .bg-steel {
@@ -91,16 +109,26 @@ a.article-title:hover {
   font-size: 2.5rem;
 }
 
-#div-frame-0 {
+.div-frame {
   border-style: inset;
   border-color: grey;
-  overflow: scroll;
-  height: 50vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
   width: 100%;
 }
 
-#frame-0 {
+.pdf-frame {
   width: 100%;
   overflow: hidden;
   height: 500%;
 }
+
+#display-page {
+  height:100%;
+}
+
+/* .col {
+  padding-right: 0;
+  padding-left: 0;
+} */
