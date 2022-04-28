@@ -11,11 +11,14 @@
 
 # Disclaimer: A majority of this boilerplate was written alongside the YouTube tutorials by Corey Schafer
 
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, redirect
 from turbo_flask import Turbo
 from datetime import datetime, timedelta
 from time import sleep
 import threading
+from random import randint, randrange
+from flask import request
+import sys
 
 app = Flask(__name__)
 turbo = Turbo(app)
@@ -35,13 +38,33 @@ test_data = [
     }
 ]
 
+num = randint(100, 999) # randint is inclusive at both ends
+data = {'code' : str(num), 'user_in' : 1};
 
 @app.route("/")
+@app.route('/form', methods=['GET', 'POST'])
+def form():
+
+    if request.method == "POST":
+
+        data["user_in"] = request.form["user_in"]
+
+        if data["code"] == data["user_in"]:
+            return redirect(url_for('smol'))
+
+        else:
+            return redirect(request.url)
+
+    return render_template('form.html', data=data)
+    
 @app.route("/home")
 @app.route("/index.html")
 def home():
     return render_template("home.html")
 
+@app.route("/start")
+def start():
+    return render_template("start.html", data=data)
 
 @app.route("/smol")
 def smol():
@@ -66,6 +89,16 @@ def spotify():
 def about():
 
     return render_template("about.html")
+
+@app.route("/calendar")
+def calendar():
+
+    return render_template("index.html")
+
+@app.route("/calc")
+def calc():
+
+    return render_template("calc.html")
 
 
 @app.context_processor

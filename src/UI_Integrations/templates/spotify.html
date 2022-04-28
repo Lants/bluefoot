@@ -1,97 +1,64 @@
+{% extends "layout.html" %}
+
+{% block content %}
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Web API Demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
-    <link href="style1.css" rel="stylesheet">
-    <!--<script src="app.js"></script>-->
+    <title>Spotify Web Playback SDK</title>
 </head>
+<body>
+    <h1>Spotify Web Playback SDK</h1>
 
-<body onload="onPageLoad()">
-    <div class="container">
+    <iframe class="center" id="emurl" frameborder="0" src="https://m.media-amazon.com/images/I/71qVC8cybrL._SX522_.jpg"></iframe>
 
-        <div id="tokenSection" class="row">
-            <div class="col">
-                <div class="mb-3">
-                    <label for="clientId" class="form-label">Client ID</label>
-                    <input type="text" class="form-control" id="clientId" placeholder="">
-                </div>
-                <div class="mb-3">
-                    <label for="clientSecret" class="form-label">Client Secret</label>
-                    <input type="text" class="form-control" id="clientSecret" placeholder="">
-                </div>
-                <input class="btn btn-primary btn-lg" type="button" onclick="requestAuthorization()" value="Request Authorization"><br/>
-            </div>
-        </div>
+    <button class="btn-play" id="togglePlay"></button>
 
-        <div id="deviceSection" class="row">
-            <div class="col">
+    <hr>
 
-                <div class="mb-3">
-                    <label for="devices" class="form-label">Devices</label>
-                    <select id="devices" class="form-control">
-                    </select>
-                    <input class="btn btn-primary btn-sm mt-3" type="button" onclick="refreshDevices()" value="Refresh Devices">
-                    <input type="button" class="btn btn-dark btn-sm  mt-3" onclick="transfer()" value="Transfer">
-                </div>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
 
-                <div class="mb-3">
-                    <label for="playlists" class="form-label">Playlists</label>
-                    <select id="playlists" class="form-control">
-                    </select>
-                    <input class="btn btn-primary btn-sm mt-3" type="button" onclick="refreshPlaylists()" value="Refresh Playlists">
+    <script>
 
-                </div>
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const token = 'BQAeJkXBkaL1QRPNtBmURaM-IgJoCg9-RNtIBK_YQaPrVrt4QGSytrsyXeHoVPXs_caza70ZjVfp7OxJOyw3lUjpcEjl9VlWjOnpZVHx0i8c1CNBnx-JnEx5AlmiiBt-H18NR9HqX5Q0SQkr1RUbt-FQOZp7DR6yVFY';
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.5
+            });
 
-                <div class="mb-3">
-                    <label for="tracks" class="form-label">Tracks</label>
-                    <select id="tracks" class="form-control">
-                    </select>
-                    <input class="btn btn-primary btn-sm mt-3" type="button" onclick="fetchTracks()" value="Fetch Tracks">
-                </div>
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+            });
 
-                <div class="mb-3">
-                    <label for="tracks" class="form-label">Album</label>
-                    <input id="album" class="form-control">
-                </div>
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
 
-                <div class="row">
-                    <div class="col">
-                        <input type="button" class="btn btn-dark" onclick="previous()" value="Prev">
-                        <input type="button" class="btn btn-dark" onclick="play()" value="Play">
-                        <input type="button" class="btn btn-dark" onclick="shuffle()" value="Shuffle">
-                        <input type="button" class="btn btn-dark" onclick="pause()" value="Pause">
-                        <input type="button" class="btn btn-dark" onclick="next()" value="Next">
-                    </div>
-                </div>
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
 
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
 
-                <div class="row  mt-3">
-                    <div class="col">
-                        <h1> Currently Playing</h1>
-                        <input type="button" class="btn btn-primary btn-sm mt-3" onclick="currentlyPlaying()" value="Refresh Currently Playing">
-                        <div>
-                            <img id="albumImage" src="">
-                            <div id="trackTitle"></div>
-                            <div id="trackArtist"></div>
-                        </div>
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
 
-                    </div>
-                </div>
+            document.getElementById('togglePlay').onclick = function() {
+              player.togglePlay();
+            };
 
-                <div class="row  mt-3">
-                    <div class="col">
-                        <div id="radioButtons"></div>
-                        <input type="button" class="btn btn-dark" onclick="saveNewRadioButton()" value="Add">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            player.connect();
+        }
+    </script>
 </body>
-
 </html>
+{% endblock content %}
+
+
 

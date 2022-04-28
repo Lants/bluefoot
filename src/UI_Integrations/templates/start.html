@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript"> 
+		var code = {{ data.code }}
+	</script>
+	<script type="text/javascript" src="num.js"></script>
+</head>
+<body>
+	<h1>Access Token: <span id = "num"></span></h1>
+	<script>
+		let num = code;
+		document.getElementById("num").innerHTML = num;
+	</script>
+</body>
+</html>
+
+{% endblock content %}

@@ -28,10 +28,23 @@ body {
     color: #FBFBFE;
   }
 
+  br {
+    color: #1A1A75;
+  }
+
   iframe {
     max-width: 100%;
     width: 100%;
     height: 70vh;
+  }
+
+  .big {
+    font-size: 3rem;
+    width: 500px;
+  }
+
+  input {
+    margin: auto;
   }
   
   .bg-steel {
@@ -122,4 +135,131 @@ body {
     box-shadow: inset 500px 0 0 0 #f9e506;
   }
 
+  .btn-5 {
+    width: 200px;
+    height: 50px;
+    border: none;
+    color: white;
+    background-color: rgb(0,0,75);
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 0 #f9e506;
+    transition: ease-out 0.3s;
+    font-size: 1rem;
+    outline: none;
+  }
+
+  .btn-5:hover{
+    box-shadow: inset 200px 0 0 0 #f9e506;
+  }
+
+  .btn-play{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    border-radius: 50%;
+    width: 200px;
+    height: 75px;
+    background: #262626 url("https://kutx.org/wp-content/uploads/2020/09/PausePlay_Simple-Web_960x400.jpg") no-repeat center / cover;
+  }
+
+  .center{
+    text-align:center;
+    width: 600px;
+    height: 600px;
+    position: relative;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
+.calendar {
+  position: relative;
+  width: 300px;
+  background-color: #fff;
+  box-sizing: border-box;
+  box-shadow: 0 5px 50px rgba(#000, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar__picture {
+  position: relative;
+  height: 200px;
+  padding: 20px;
+  color: #fff;
+  background: #262626 url("https://carolkent.com/wp-content/uploads//2016/10/Blue-Footed-Booby.jpg") no-repeat center / cover;
+  text-shadow: 0 2px 2px rgba(#000, 0.2);
+  box-sizing: border-box;
+  
+  &::before {
+    content: "";
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    background: linear-gradient(to top, rgba(#000, 0.25), rgba(#000, 0.1));
+  }
+  
+  h2 {
+    margin: 0;
+    color: #0D3FC4;
+  }
+  
+  h3 {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.calendar__date {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(25px, 1fr));
+  grid-gap: 10px;
+  box-sizing: border-box;
+}
+
+.calendar__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  font-weight: 600;
+  color: #0D3FC4;
+  
+  &:nth-child(7) {
+    color: #ff685d;
+  }
+}
+
+.calendar__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  color: #262626;
+
+  &:nth-child(7n) {
+    color: #ff685d;
+    font-weight: 700;
+  }
+  
+  &--current {
+    background-color: #0D3FC4;
+    color: #0D3FC4 !important;
+    cursor: pointer;
+  }
+}
+
+.calendar__number_today {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  color: #0D3FC4;
+
+}
 
