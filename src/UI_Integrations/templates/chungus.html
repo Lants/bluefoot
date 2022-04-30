@@ -1,38 +1,8 @@
 {% extends "layout.html" %}
 
-<!-- This file serves as the Chungus display -->
-
-<!-- As given, this file creates two divs. One takes spotify data passed from UI.py
-        to print out relevant song details. We need to figure out how to dynamically update displays.
-        Also need to place the divs properly. Desired test configuration is side-by-side.  -->
-
-
 {% block content %}
-    <div class="row">
-        <h1>Chungus</h1>
-        <a href="{{ url_for('home') }}">Home</a>
-        <p>give me displays!!</p>
+<div id="display-page" class="container-fluid">
+    <p>This should not be visible (1)</p>
+</div>
 
-        <div class="content-section">
-            <h3>Display Presets (TESTING)</h3>
-            <form method="POST" action="">
-                <fieldset class="form-group">
-                    <legend class="form-group">
-                        <div class="form-group">
-                                <input type="submit" name="display-preset" value="1">
-                                <input type="submit" name="display-preset" value="2">
-                                <input type="submit" name="scroll-action" value="Down 0">
-                                <input type="submit" name="scroll-action" value="Up 0">
-                        </div>
-                    </legend>
-                </fieldset>
-            </form>
-        </div>
-
-        {% include "preset_conditionals.html" %}
-
-    </div>
-    
-    
-{% endblock content%}
-
+{% endblock content %}

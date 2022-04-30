@@ -5,31 +5,10 @@
 {% block content %}
 
     <h1>Control Panel (smol)</h1>
-    <a href="{{ url_for('home') }}">Back to Home</a>
-    <p>Hello World!</p>
-
-    <div class="content-section">
-        <form method="POST" action="">
-            <fieldset class="form-group">
-                <legend class="form-group">
-                    <div class="form-group">
-                            <input type="submit" name="On-Off Button" value="on">
-                            <input type="submit" name="On-Off Button" value="off">
-                    </div>
-                </legend>
-            </fieldset>
-        </form>
+    <div class="container-fluid">
+        <div id="preset-buttons-div" class="row"></div>
+        <div id="ctrl-panel" class="row"></div>
     </div>
 
-    {% for data in test_data %}
-        {% if data.id == 0 %}
-            {% include "smol_button_status.html" %}
-        {% else %}
-            <h2> Data ID: {{ data.id }} </h2>
-            <p>Data Content: {{ data.content }}</p>
-            <p>{{ data }}</p>
-        {% endif %}
-        
-    {% endfor %}
 
 {% endblock content %}
