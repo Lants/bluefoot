@@ -173,6 +173,27 @@ body {
     margin-right: auto;
   }
 
+  .center2{
+    text-align:center;
+    width: 600px;
+    height: 600px;
+    position: relative;
+    display: block;
+    margin-left: 200px;
+    margin-right: 0px;
+  }
+
+  .col{
+    float: left;
+    width: 50%;
+    padding: 10px;
+  }
+
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
 
 .calendar {
   position: relative;
