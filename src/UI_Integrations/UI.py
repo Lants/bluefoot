@@ -177,6 +177,8 @@ def handle_smol_request_PDF(session_id, id, button_type):
         template = render_template("display_presets/sample_pdf.html")
     elif button_type == 'Calendar':
         template = render_template("display_presets/calendar.html")
+    elif button_type == 'Spotify':
+        template = render_template("display_presets/spotify.html")
 
     emit('chungus-template-response', {'content': template, 'type': button_type, 'row': row, 'col': col}, to=session_id)
 

@@ -6,6 +6,7 @@ const blank_uri = "blank.html";
 const BLANK = Symbol("BLANK");
 const PDF = Symbol("PDF");
 const SPOTIFY = Symbol("SPOTIFY");
+var player;
 
 var presets = {
     1: [[BLANK]],
@@ -24,12 +25,6 @@ function bodyOnload() {
         smolInit();
     }
 }
-
-// This was necessary for Chungus scrolling to work correctly. Figure out how to not use this!!
-// function iframeOnload() {
-//     bodyOnload();
-// }
-
 
 function chungusInit() {
     console.log("Page Init: Chungus");
@@ -50,6 +45,8 @@ function chungusInit() {
 
         socket.on("chungus-template-response", function(msg) {
             insertContent(msg['content'], msg['type'], msg['col'], msg['row']);
+            if (msg['type'] === 'calendar') calendarOnload(session_id, msg['col'], msg['row']);
+            else if (msg['type'] === 'Spotify') spotifyOnload();
         });
 
         // Listener for pdf scroll from Flask App
@@ -112,21 +109,49 @@ function smolInit() {
     });
 
     socket.on('smol-init', function() {
+        let preset_div = document.getElementById('preset-buttons-div');
+        preset_div.innerText = "";
         for (let p = 1; p < Object.keys(presets).length + 1; p++) {
             let id = `preset-${p}`;
             let button = document.createElement('input');
-            button.type = "button"
+            button.type = "button";
             button.id = id;
             button.value = id;
             button.addEventListener('click', function(){
                 requestChangePreset(socket, session_id, p);
             });
-            document.getElementById('preset-buttons-div').appendChild(button);
+            preset_div.appendChild(button);
         }
+        let desmosButton = document.createElement('input');
+        desmosButton.type = "button";
+        desmosButton.id = 'desmos-button';
+        desmosButton.value = "Calculator Mode";
+        desmosButton.addEventListener('click', function() {
+            let panelDiv = document.getElementById('ctrl-panel');
+            let calculatorDiv = document.getElementById('calculator');
+            calculatorDiv.style.display = 'initial';
+            panelDiv.style.display = 'none';
+        });
+
+        let presetButton = document.createElement('input');
+        presetButton.type = "button";
+        presetButton.id = 'desmos-button';
+        presetButton.value = "Preset Mode";
+        presetButton.addEventListener('click', function() {
+            let panelDiv = document.getElementById('ctrl-panel');
+            let calculatorDiv = document.getElementById('calculator');
+            calculatorDiv.style.display = 'none';
+            panelDiv.style.display = 'initial';
+        });
+
+        preset_div.appendChild(desmosButton);
+        preset_div.appendChild(presetButton);
     });
 
     socket.on('create-smol-panel', function(data) {
         let panelDiv = document.getElementById('ctrl-panel');
+        let calculatorDiv = document.getElementById('calculator');
+        calculatorDiv.style.display = 'none';
         panelDiv.textContent = '';
         let rows = data['rows'];
         let template = data['template'];
@@ -154,7 +179,6 @@ function smolInit() {
                     nosePicker(socket, session_id, c+1, r+1);
                 });
                 newCol.appendChild(uploadButton);
-
             }
             panelDiv.appendChild(newCol);
         }
@@ -244,26 +268,27 @@ function dummyPrint(string) {
 }
 
 
-// The Browser API key obtained from the Google API Console.
-// Replace with your own Browser API key, or your own key.
-var developerKey = 'AIzaSyArcicIi3Dpg9lgMVNskGvXGoyACMGqtKM';
-
-// The Client ID obtained from the Google API Console. Replace with your own Client ID.
-var clientId = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com"
-
-// Replace with your own project number from console.developers.google.com.
-// See "Project number" under "IAM & Admin" > "Settings"
-var appId = "673944149019";
-
-// Scope to use to access user's Drive items.
-var scope = ['https://www.googleapis.com/auth/drive.file'];
-
-var pickerApiLoaded = false;
-var oauthToken;
-var fileURL = "http://www.africau.edu/images/default/sample.pdf";
+// --------------------------------- GOOGLE PDF -----------------------------------------
 
 // Use the Google API Loader script to load the google.picker script.
 function nosePicker(socket, session_id, c, r) {
+    // The Browser API key obtained from the Google API Console.
+    // Replace with your own Browser API key, or your own key.
+    var developerKey = 'AIzaSyArcicIi3Dpg9lgMVNskGvXGoyACMGqtKM';
+
+    // The Client ID obtained from the Google API Console. Replace with your own Client ID.
+    var clientId = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com"
+
+    // Replace with your own project number from console.developers.google.com.
+    // See "Project number" under "IAM & Admin" > "Settings"
+    var appId = "673944149019";
+
+    // Scope to use to access user's Drive items.
+    var scope = ['https://www.googleapis.com/auth/drive.file'];
+
+    var pickerApiLoaded = false;
+    var oauthToken;
+    var fileURL = "http://www.africau.edu/images/default/sample.pdf";
     boogerPicker();
     function boogerPicker() {
         console.log("I AM PICKING BOOGERS");
@@ -321,4 +346,178 @@ function nosePicker(socket, session_id, c, r) {
         }
     }
 
+}
+
+// ---------------------------- CALENDAR -------------------------------------
+function calendarOnload(session_id, c, r) {
+    console.log("CALENDAR LOADED");
+    handleClientLoad();
+    // Client ID and API key from the Developer Console
+    var CLIENT_ID = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com";
+    var API_KEY = "AIzaSyArcicIi3Dpg9lgMVNskGvXGoyACMGqtKM";
+
+    // Array of API discovery doc URLs for APIs used by the quickstart
+    var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+
+    // Authorization scopes required by the API; multiple scopes can be
+    // included, separated by spaces.
+    var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+
+    var authorizeButton = document.getElementById('authorize_button');
+    var signoutButton = document.getElementById('signout_button');
+
+    /**
+     *  On load, called to load the auth2 library and API client library.
+     */
+    function handleClientLoad() {
+        gapi.load('client:auth2', initClient);
+    }
+
+    function clearList() {
+        var element = document.getElementById('content');
+
+        while (element.firstChild) {
+        element.removeChild(element.firstChild)
+        }
+    }
+
+
+    /**
+     *  Initializes the API client library and sets up sign-in state
+     *  listeners.
+     */
+    function initClient() {
+        gapi.client.init({
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOCS,
+        scope: SCOPES
+        }).then(function () {
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+        // Handle the initial sign-in state.
+        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+        authorizeButton.onclick = handleAuthClick;
+        signoutButton.onclick = handleSignoutClick;
+        }, function(error) {
+        appendPre(JSON.stringify(error, null, 2));
+        });
+    }
+
+    /**
+     *  Called when the signed in status changes, to update the UI
+     *  appropriately. After a sign-in, the API is called.
+     */
+    function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+        authorizeButton.style.display = 'none';
+        signoutButton.style.display = 'block';
+        listUpcomingEvents();
+        } else {
+        authorizeButton.style.display = 'block';
+        signoutButton.style.display = 'none';
+        }
+    }
+
+    /**
+     *  Sign in the user upon button click.
+     */
+    function handleAuthClick(event) {
+        gapi.auth2.getAuthInstance().signIn();
+    }
+
+    /**
+     *  Sign out the user upon button click.
+     */
+    function handleSignoutClick(event) {
+        gapi.auth2.getAuthInstance().signOut();
+        clearList();
+    }
+
+    /**
+     * Append a pre element to the body containing the given message
+     * as its text node. Used to display the results of the API call.
+     *
+     * @param {string} message Text to be placed in pre element.
+     */
+    function appendPre(message) {
+        var pre = document.getElementById('content');
+        var textContent = document.createTextNode(message + '\n');
+        pre.appendChild(textContent);
+    }
+
+    /**
+     * Print the summary and start datetime/date of the next ten events in
+     * the authorized user's calendar. If no events are found an
+     * appropriate message is printed.
+     */
+    function listUpcomingEvents() {
+        gapi.client.calendar.events.list({
+        'calendarId': 'primary',
+        'timeMin': (new Date()).toISOString(),
+        'showDeleted': false,
+        'singleEvents': true,
+        'maxResults': 10,
+        'orderBy': 'startTime'
+        }).then(function(response) {
+        var events = response.result.items;
+        appendPre('Upcoming events:');
+
+        if (events.length > 0) {
+            for (i = 0; i < events.length; i++) {
+            var event = events[i];
+            var when = event.start.dateTime;
+            if (!when) {
+                when = event.start.date;
+            }
+            appendPre(event.summary + ' (' + when + ')')
+            }
+        } else {
+            appendPre('No upcoming events found.');
+        }
+        });
+    }
+}
+
+// -------------------------------- SPOTIFY ------------------------------------------
+
+window.onSpotifyWebPlaybackSDKReady = () => {
+    console.log("SPOTIFY READY");
+    const token = 'BQBqhsp9OWlUFRDDNnt-nTfoOJxlMFm0tO29uD9Rl1SfbDQTeGJQAHF2-cCNkJxCxeakHCe_uHO2LHMkrI_ItgC-qZNG7ceFfcQZCHmCdGMInSocYSf7hotTelcJ2tGs9h7ZOA5iCapbXZAnWJLrsG7VpvkJF4gv2qg';
+    player = new Spotify.Player({
+        name: 'Web Playback SDK Quick Start Player',
+        getOAuthToken: cb => { cb(token); },
+        volume: 0.5
+    });
+
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+    });
+
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+    });
+
+    player.addListener('initialization_error', ({ message }) => {
+        console.error(message);
+    });
+
+    player.addListener('authentication_error', ({ message }) => {
+        console.error(message);
+    });
+
+    player.addListener('account_error', ({ message }) => {
+        console.error(message);
+    });
+}
+
+function spotifyOnload() {
+    document.getElementById('togglePlay').onclick = function() {
+        player.togglePlay();
+    };
+
+    player.connect();
 }
