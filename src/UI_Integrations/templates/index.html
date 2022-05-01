@@ -126,6 +126,7 @@
           } else {
             authorizeButton.style.display = 'block';
             signoutButton.style.display = 'none';
+            clearList();
           }
         }
 
@@ -141,6 +142,7 @@
          */
         function handleSignoutClick(event) {
           gapi.auth2.getAuthInstance().signOut();
+          clearList();
         }
 
         /**
@@ -153,6 +155,15 @@
           var pre = document.getElementById('content');
           var textContent = document.createTextNode(message + '\n');
           pre.appendChild(textContent);
+        }
+
+        function clearList() {
+          var element = document.getElementById('content');
+
+          while (element.firstChild) {
+            element.removeChild(element.firstChild)
+          }
+
         }
 
         /**
