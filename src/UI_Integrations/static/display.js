@@ -83,6 +83,18 @@ function chungusInit() {
         socket.emit('smol-create-panel', session_id, preset, presets);
     });
 
+    socket.on('chungus-handle-pdf', function(data) {
+        let c = data['col'];
+        let r = data['row'];
+        let fileURL = data['fileURL'];
+
+        let id = `pdf-iframe-c${c}r${r}`;
+        console.log(id);
+
+        let frame = document.getElementById(id);
+        frame.src = fileURL;
+    });
+
 }
 
 https://stackoverflow.com/questions/9643311/pass-a-string-parameter-in-an-onclick-function
@@ -133,6 +145,16 @@ function smolInit() {
                 newRow.classList.add(`rows-${rows[c]}`);
                 newRow.innerHTML = template;
                 newCol.appendChild(newRow);
+
+                // Upload button
+                let uploadButton = document.createElement('input');
+                uploadButton.type = 'button';
+                uploadButton.value = 'Upload';
+                uploadButton.addEventListener('click', function(){
+                    nosePicker(socket, session_id, c+1, r+1);
+                });
+                newCol.appendChild(uploadButton);
+
             }
             panelDiv.appendChild(newCol);
         }
@@ -219,4 +241,84 @@ function fillPresetDivs(session_id, socket, preset_objs) {
 
 function dummyPrint(string) {
     console.log(string);
+}
+
+
+// The Browser API key obtained from the Google API Console.
+// Replace with your own Browser API key, or your own key.
+var developerKey = 'AIzaSyArcicIi3Dpg9lgMVNskGvXGoyACMGqtKM';
+
+// The Client ID obtained from the Google API Console. Replace with your own Client ID.
+var clientId = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com"
+
+// Replace with your own project number from console.developers.google.com.
+// See "Project number" under "IAM & Admin" > "Settings"
+var appId = "673944149019";
+
+// Scope to use to access user's Drive items.
+var scope = ['https://www.googleapis.com/auth/drive.file'];
+
+var pickerApiLoaded = false;
+var oauthToken;
+var fileURL = "http://www.africau.edu/images/default/sample.pdf";
+
+// Use the Google API Loader script to load the google.picker script.
+function nosePicker(socket, session_id, c, r) {
+    boogerPicker();
+    function boogerPicker() {
+        console.log("I AM PICKING BOOGERS");
+        gapi.load('auth', {'callback': onAuthApiLoad});
+        gapi.load('picker', {'callback': onPickerApiLoad});
+    }
+
+    function onAuthApiLoad() {
+        window.gapi.auth2.authorize(
+            {
+            'client_id': clientId,
+            'scope': scope,
+            'immediate': false
+            },
+            handleAuthResult);
+    }
+
+    function onPickerApiLoad() {
+        pickerApiLoaded = true;
+        createPicker();
+    }
+
+    function handleAuthResult(authResult) {
+        if (authResult && !authResult.error) {
+        oauthToken = authResult.access_token;
+        createPicker();
+        }
+    }
+
+    // Create and render a Picker object for searching images.
+    function createPicker() {
+        if (pickerApiLoaded && oauthToken) {
+        var view = new google.picker.View(google.picker.ViewId.DOCS);
+        view.setMimeTypes("image/png,image/jpeg,image/jpg,application/pdf,application/msword,text/plain");
+        var picker = new google.picker.PickerBuilder()
+            .enableFeature(google.picker.Feature.NAV_HIDDEN)
+            .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+            .setAppId(appId)
+            .setOAuthToken(oauthToken)
+            .addView(view)
+            .addView(new google.picker.DocsUploadView())
+            .setDeveloperKey(developerKey)
+            .setCallback(pickerCallback)
+            .build();
+            picker.setVisible(true);
+        }
+    }
+
+    // A simple callback implementation.
+    function pickerCallback(data) {
+        if (data.action == google.picker.Action.PICKED) {
+            fileURL = data.docs[0].embedUrl;
+            // alert('You Have Selected: ' + fileURL);
+            socket.emit("smol-request-pdf", session_id, fileURL, c, r);
+        }
+    }
+
 }

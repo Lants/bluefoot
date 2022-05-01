@@ -177,7 +177,12 @@ def handle_smol_request_PDF(session_id, id, button_type):
         template = render_template("display_presets/sample_pdf.html")
     elif button_type == 'Calendar':
         template = render_template("display_presets/calendar.html")
+
     emit('chungus-template-response', {'content': template, 'type': button_type, 'row': row, 'col': col}, to=session_id)
+
+@socketio.on("smol-request-pdf")
+def handle_smol_request_pdf(session_id, file_URL, c, r):
+    emit('chungus-handle-pdf', {'fileURL': file_URL, 'col': c, 'row': r}, to=session_id)
 
     #---- FROM CHUNGUS -------------------------
 @socketio.on("chungus-ready")
