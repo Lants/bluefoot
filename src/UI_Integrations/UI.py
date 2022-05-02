@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from flask_socketio import SocketIO, send, emit
 import threading
+import newthing
 
 app = Flask(__name__)
 
@@ -107,6 +108,19 @@ def login():
 def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
+
+@app.route("/discord",methods = ['GET','POST'])
+def discord():
+    code = request.args.get("code")
+    #access_token = Oauth.get_discord_token(code)
+    access_token  = newthing.Oauth.get_discord_token(code)
+    #print("the access token was ",access_token)
+    newuser = newthing.Oauth.get_current_user(access_token['access_token'])
+    user = newuser.get("username")
+    print("the user token was ",user)
+    print("HERE")
+    newthing.Oauth.get_message(928457965890056242)
+    return user
 
 # Set global data (be careful... this is necessary for avoiding javascript,
 #   but global variables can be dangerous/messy)
