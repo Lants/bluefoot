@@ -32,7 +32,7 @@ class Oauth(object):
 
   @staticmethod
   def get_current_user(access_token):
-    url = "'https://discord.com/api/v9/users/@me'"
+    url = "https://discordapp.com/api/users/@me"
     headers = {
       "Authorization": "Bearer {}".format(access_token)
     }
