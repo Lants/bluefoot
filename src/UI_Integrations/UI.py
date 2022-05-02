@@ -16,14 +16,15 @@ from forms import registerform,Loginform
 from turbo_flask import Turbo
 from datetime import datetime, timedelta
 from time import sleep
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, send, emit, join_room
 import threading
 
 app = Flask(__name__)
 
 # WHEN DEPLOYING PUBLICLY, GENERATE A NEW ONE AND MAKE IT AN ENVIRONMENT VARIABLE OR SOMETHING INSTEAD,
 #   OTHERWISE THIS KEY IS USELESS FOR PREVENTING SECURITY RISKS
-app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
+# app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
+# app.config['SESSION_ID'] = 'ChangeMeForSessionDifferentiation'
 turbo = Turbo(app)
 socketio = SocketIO(app)
 
@@ -46,6 +47,9 @@ preset = {
     'id': 1,
     'iframes': ['frame-0']
 }
+
+savestate = ["hi"]
+sessions = set()
 
 # Home page route
 @app.route("/")
@@ -70,31 +74,23 @@ def smol():
     return render_template("smol.html", title='smol')
 
 
-
 # Chungus page route
 @app.route("/chungus", methods=['POST', 'GET'])
 def chungus():
     if request.method == 'POST':
-        # Handle display preset request (turbo-flask)
-        if 'display-preset' in request.form.keys():
-            print("Display-Preset Action POST received")
-            if request.form['display-preset'] == '1':
-                preset['id'] = 1
-                print("Preset 1")
-                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
-            elif request.form['display-preset'] == '2':
-                preset['id'] = 2
-                print("Preset 2")
-                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
+        # print(str(request.form.keys()))
         
         # Handle scroll action request (SocketIO)
-        elif 'scroll-action' in request.form.keys():
+        if 'scroll-action' in request.form.keys():
             tokens = request.form['scroll-action'].split()
-            tokens[-1] = "frame-" + tokens[-1]
             print("Scroll Action POST received: " + str(tokens))
-            
-            socketio.emit('pdf-scroll-event', tokens, broadcast=True)
 
+            # TODO: Change broadcast to a named group when sessions are implemented
+            socketio.emit('pdf-scroll-event', tokens, broadcast=True)
+    # elif request.method == 'GET':
+    #     if request.args.get('desk_token') is not None and request.args.get('desk_token') not in sessions:
+    #         sessions.add(request.args.get('desk_token'))
+    #         print(str(sessions))
     return render_template("chungus.html", title='Chungus')
 
 #login page route
@@ -108,7 +104,7 @@ def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
 
-# Set global data (be careful... this is necessary for avoiding javascript,
+# Set global data (be careful... this is necessary for minimizing javascript,
 #   but global variables can be dangerous/messy)
 @app.context_processor
 def inject_data():
@@ -124,13 +120,14 @@ def inject_data():
         'time_elapsed': str(timedelta(seconds=72)), # Replace 72 with spotify_API_retrieve.song_length or whatever
         'length': str(timedelta(seconds=212)), # Replace 212 with however many seconds long the song is
         }
-]
+    ]
 
     # Add dictionaries entries for dynamic data here
     dynamic_vars['chungus_current_time'] = datetime.now().strftime("%H:%M:%S")
     dynamic_vars['spotify_data'] = spotify_data
     dynamic_vars['test_data'] = test_data
     dynamic_vars['preset'] = preset
+    dynamic_vars['savestate'] = savestate
 
     return dynamic_vars
 
@@ -138,11 +135,10 @@ def inject_data():
 #   thread in before_first_request(), as this runs in an infinite loop.
 def update_chungus_d1():
     with app.app_context():
-        while True:
-            sleep(1)
-            turbo.push(turbo.replace(render_template('chungus_display_1.html'), 'display-1')) # look into the "to" argument for client-specific updates
-
-
+        pass
+        # while True:
+        #     sleep(1)
+        #     turbo.push(turbo.replace(render_template('chungus_display_1.html'), 'display-1')) # look into the "to" argument for client-specific updates
 
 @app.before_first_request
 def before_first_request():
@@ -150,18 +146,71 @@ def before_first_request():
 
 ####################### SocketIO handlers ###############################
 
-@socketio.on('message')
+
+@socketio.on("message")
 def handle_msg(msg):
     print('Msg: ' + msg)
     send(msg, broadcast=True) # broadcast off to respond to sender only instead
 
-@socketio.on('chungus-ready')
-def handle_chungus(msg):
-    print('Message: ' + msg)
-    socketio.emit('chungus-init', preset['iframes'], broadcast=True)
+    #---- FROM SMOL ---------------------------
+@socketio.on("smol-ready")
+def handle_smol_ready(session_id):
+    print("smol: User has connected.")
 
+    if session_id not in sessions:
+        sessions.add(session_id)
+    join_room(session_id)
+    emit("smol-init")
+
+@socketio.on("request-change-preset")
+def handle_change_preset(session_id, p):
+    # print(str(session_id) + " " + str(p))
+    preset_name = "display_presets/preset_" + str(p) + ".html"
+    emit("change-preset", {'p': p, 'elem': render_template(preset_name)}, to=session_id)
+
+@socketio.on("smol-request-template")
+def handle_smol_request_PDF(session_id, id, button_type):
+    col = id[-3]
+    row = id[-1]
+    template = None
+    if button_type == 'PDF':
+        template = render_template("display_presets/sample_pdf.html")
+    elif button_type == 'Calendar':
+        template = render_template("display_presets/calendar.html")
+    elif button_type == 'Spotify':
+        template = render_template("display_presets/spotify.html")
+
+    emit('chungus-template-response', {'content': template, 'type': button_type, 'row': row, 'col': col}, to=session_id)
+
+@socketio.on("smol-request-pdf")
+def handle_smol_request_pdf(session_id, file_URL, c, r):
+    emit('chungus-handle-pdf', {'fileURL': file_URL, 'col': c, 'row': r}, to=session_id)
+
+    #---- FROM CHUNGUS -------------------------
+@socketio.on("chungus-ready")
+def handle_chungus_ready(session_id):
+    print("Chungus: User has connected.")
+    while session_id not in sessions:
+        print("Chungus: smol not found")
+        sleep(1)
+    print("Chungus: smol found")
+    join_room(session_id)
+    emit("chungus-init", render_template("display_presets/preset_1.html"), to=session_id)
+
+@socketio.on("chungus-request-template")
+def handle_template_request(msg):
+    print("Message: " + str(msg))
+    response = render_template("display_presets/" + msg['uri'])
+    emit("chungus-template-response", {'content': response, 'type':msg['type'], 'row': msg['row'], 'col': msg['col']}, to=msg['session_id'])
+
+@socketio.on("smol-create-panel")
+def handle_smol_create_panel(session_id, preset, presets):
+    rows = [len(col) for col in presets[str(preset)]]
+    print(rows)
+    emit("create-smol-panel", {'rows': rows, 'template': render_template("display_presets/choose.html")}, to=session_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
     socketio.run(app)
+
     

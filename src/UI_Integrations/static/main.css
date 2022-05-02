@@ -10,26 +10,19 @@
     padding: 5px;
 }
 
+/* html { */
+  /* overflow: hidden; */
+/* } */
+
 body {
-  background: #1A1A75;
+  background: #fafafa;
   color: #333333;
   margin-top: 5rem;
+  height: calc(100vh - 5rem);
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #FBFBFE;
-}
-
-p {
-  color: #FBFBFE;
-}
-
-hr {
-  color: #FBFBFE;
-}
-
-br {
-  color: #1A1A75;
+  color: #444444;
 }
 
 iframe {
@@ -38,13 +31,23 @@ iframe {
   height: inherit;
 }
 
-.big {
-  font-size: 3rem;
-  width: 500px;
+main {
+  height: inherit;
 }
 
-input {
-  margin: auto;
+.rows-1 {
+  height: 100%;
+  max-height: 100%;
+}
+
+.rows-2 {
+  height: 50%;
+  max-height: 50%;
+}
+
+.show-border {
+  border-style: groove;
+  border-color: #0a426a48;
 }
 
 .bg-steel {
@@ -118,18 +121,36 @@ a.article-title:hover {
   font-size: 2.5rem;
 }
 
-#div-frame-0 {
-  border-style: inset;
-  border-color: grey;
-  overflow: scroll;
-  height: 50vh;
+.div-frame {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
   width: 100%;
 }
 
-#frame-0 {
+.pdf-frame {
   width: 100%;
   overflow: hidden;
   height: 500%;
+}
+
+#display-page {
+  height:100%;
+}
+
+.col {
+  max-height: 100%;
+  /* padding-right: 0;
+  padding-left: 0; */
+}
+
+.big {
+  font-size: 3rem;
+  width: 500px;
+}
+
+input {
+  margin: auto;
 }
 
 .btn-4 {
@@ -227,7 +248,7 @@ a.article-title:hover {
   background: #262626 url("https://carolkent.com/wp-content/uploads//2016/10/Blue-Footed-Booby.jpg") no-repeat center / cover;
   text-shadow: 0 2px 2px rgba(#000, 0.2);
   box-sizing: border-box;
-  
+
   &::before {
     content: "";
     left: 0;
@@ -237,12 +258,12 @@ a.article-title:hover {
     position: absolute;
     background: linear-gradient(to top, rgba(#000, 0.25), rgba(#000, 0.1));
   }
-  
+
   h2 {
     margin: 0;
     color: #0D3FC4;
   }
-  
+
   h3 {
     margin: 0;
     font-weight: 500;
@@ -264,7 +285,7 @@ a.article-title:hover {
   height: 25px;
   font-weight: 600;
   color: #0D3FC4;
-  
+
   &:nth-child(7) {
     color: #ff685d;
   }
@@ -281,7 +302,7 @@ a.article-title:hover {
     color: #ff685d;
     font-weight: 700;
   }
-  
+
   &--current {
     background-color: #0D3FC4;
     color: #0D3FC4 !important;
@@ -297,4 +318,3 @@ a.article-title:hover {
   color: #0D3FC4;
 
 }
-
