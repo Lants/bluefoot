@@ -105,7 +105,7 @@ def logerror():
 
 @app.route("/regerror", methods=['POST', 'GET'])
 def regerror():
-    return render_template('regerror.html')
+    return render_template('regexist.html')
 
 @app.route("/regsuc", methods=['POST', 'GET'])
 def regsuc():
