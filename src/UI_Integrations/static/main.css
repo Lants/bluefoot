@@ -15,14 +15,27 @@
 /* } */
 
 body {
-  background: #fafafa;
+  background: #1A1A75;
   color: #333333;
   margin-top: 5rem;
   height: calc(100vh - 5rem);
 }
 
+p {
+    color: #FBFBFE;
+  }
+
+  hr {
+    color: #FBFBFE;
+  }
+
+  br {
+    color: #1A1A75;
+  }
+
+
 h1, h2, h3, h4, h5, h6 {
-  color: #444444;
+  color: #FBFBFE;;
 }
 
 iframe {
@@ -152,6 +165,7 @@ a.article-title:hover {
 input {
   margin: auto;
 }
+
 
 .btn-4 {
   width: 500px;

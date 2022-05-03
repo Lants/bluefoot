@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 <!-- This file serves as the smol control panel. -->
-
+<link rel="stylesheet" href="{{url_for('static', filename='buttons.css')}}">
 {% block content %}
 
     <h1>Control Panel (smol)</h1>
-    <div id="ctrl-panel-div" class="container-fluid">
+    <div id="ctrl-panel-div" class="container-fluid btn-4">
         <div id="preset-buttons-div" class="row"></div>
         <div id="ctrl-panel" class="row"></div>
         <!-- <div id="calculator" class="row" style="display: none">
