@@ -11,21 +11,37 @@
 
 # Disclaimer: A majority of this boilerplate was written alongside the YouTube tutorials by Corey Schafer
 
-from flask import Flask, render_template, url_for, flash, request
-from forms import registerform,Loginform
+from flask import Flask, render_template, url_for, flash, request, redirect, session
+from flask_mysqldb import MySQL
 from turbo_flask import Turbo
 from datetime import datetime, timedelta
 from time import sleep
-from flask_socketio import SocketIO, send, emit
 import threading
+import MySQLdb.cursors
+import re
+
+#app.secret_key = 'secret'
+
+#URL = "http://localhost:9090"
+
+#PARAMS = {'username': test,
+#         'password': password}
+
+#r = requests.get(url=URL, params = PARAMS);
 
 app = Flask(__name__)
+
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = '123qweasdzxc'
+app.config['MYSQL_DB'] = 'bluefoot'
+
+mysql = MySQL(app)
 
 # WHEN DEPLOYING PUBLICLY, GENERATE A NEW ONE AND MAKE IT AN ENVIRONMENT VARIABLE OR SOMETHING INSTEAD,
 #   OTHERWISE THIS KEY IS USELESS FOR PREVENTING SECURITY RISKS
 app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
 turbo = Turbo(app)
-socketio = SocketIO(app)
 
 def test_url(self):
     with app.app_context(), app.test_request_context():
@@ -42,17 +58,15 @@ test_data = [
     }
 ]
 
-preset = {
-    'id': 1,
-    'iframes': ['frame-0']
-}
+preset = {'id': 1}
 
 # Home page route
 @app.route("/")
 @app.route("/home")
 @app.route("/index.html")
+
 def home():
-    return render_template("home.html")
+    return render_template("drawing-text.html")
 
 # smol page route
 @app.route("/smol", methods=['POST', 'GET'])
@@ -75,38 +89,78 @@ def smol():
 @app.route("/chungus", methods=['POST', 'GET'])
 def chungus():
     if request.method == 'POST':
-        # Handle display preset request (turbo-flask)
-        if 'display-preset' in request.form.keys():
-            print("Display-Preset Action POST received")
-            if request.form['display-preset'] == '1':
-                preset['id'] = 1
-                print("Preset 1")
-                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
-            elif request.form['display-preset'] == '2':
-                preset['id'] = 2
-                print("Preset 2")
-                turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
-        
-        # Handle scroll action request (SocketIO)
-        elif 'scroll-action' in request.form.keys():
-            tokens = request.form['scroll-action'].split()
-            tokens[-1] = "frame-" + tokens[-1]
-            print("Scroll Action POST received: " + str(tokens))
-            
-            socketio.emit('pdf-scroll-event', tokens, broadcast=True)
-
+        if request.form['display-preset'] == '1':
+            preset['id'] = 1
+            print("Preset 1")
+            turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
+        elif request.form['display-preset'] == '2':
+            preset['id'] = 2
+            print("Preset 2")
+            turbo.push(turbo.replace(render_template('preset_conditionals.html'), 'display-presets'))
     return render_template("chungus.html", title='Chungus')
 
-#login page route
-@app.route("/login")
-def login():
-    form = Loginform()
-    return render_template("login.html", title='login',form = form)
+@app.route("/logerror", methods=['POST', 'GET'])
+def logerror():
+    return render_template('logerror.html')
 
-@app.route("/register")
+@app.route("/regerror", methods=['POST', 'GET'])
+def regerror():
+    return render_template('regerror.html')
+
+@app.route("/regsuc", methods=['POST', 'GET'])
+def regsuc():
+    return render_template('regsuc.html')
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    #error = ''
+    #if request.method == 'POST':
+    #    if request.form['username'] != 'Bluefoot' or request.form['password'] != 'admin':
+    #        error = 'Invalid credentials. Please try again!'
+    #    else:
+    #        return redirect(url_for('smol'))
+    #return render_template("login_ming.html", title='login', error = error)
+    
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = % s AND password = % s', (username, password, ))
+        account = cursor.fetchone()
+        if account:
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['username'] = account['username']
+            #return render_template('index.html', msg = msg)
+            return redirect(url_for('smol'))
+        else:
+            return redirect(url_for('logerror'))
+    return render_template('login_ming_2.html')
+
+
+@app.route('/register', methods =['GET', 'POST'])
 def register():
-    form = registerform()
-    return render_template("register.html", title='Register',form = form)
+    msg = ''
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = % s', (username, ))
+        account = cursor.fetchone()
+        if account:
+            return redirect(url_for('regerror'))
+        elif not re.match(r'[A-Za-z0-9]+', username):
+            msg = 'Username must contain only characters and numbers !'
+        elif not username or not password:
+            msg = 'Please fill out the form'
+        else:
+            cursor.execute('INSERT INTO accounts VALUES (NULL, % s, % s)', (username, password, ))
+            mysql.connection.commit()
+            return redirect(url_for('regsuc'))
+    elif request.method == 'POST':
+        msg = 'Please fill out the form !'
+    return render_template('register_ming_2.html', msg = msg)
+
 
 # Set global data (be careful... this is necessary for avoiding javascript,
 #   but global variables can be dangerous/messy)
@@ -148,19 +202,7 @@ def update_chungus_d1():
 def before_first_request():
     threading.Thread(target=update_chungus_d1).start()
 
-####################### SocketIO handlers ###############################
-
-@socketio.on('message')
-def handle_msg(msg):
-    print('Msg: ' + msg)
-    send(msg, broadcast=True) # broadcast off to respond to sender only instead
-
-@socketio.on('chungus-ready')
-def handle_chungus(msg):
-    print('Message: ' + msg)
-    socketio.emit('chungus-init', preset['iframes'], broadcast=True)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
-    socketio.run(app)
+# if __name__ == '__main__':
+#     app.run(debug=True)

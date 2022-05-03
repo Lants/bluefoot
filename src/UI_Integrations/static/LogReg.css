@@ -1,0 +1,81 @@
+.header{
+    width: 200px;
+    height: 70px;
+    background-color: #236B8E; 
+}
+          
+.border{
+    padding: 80px 50px;
+    width: 400px;
+    height: 450px;
+    box-sizing: content-box;
+    border-radius: 0px;
+    background-color: #9AC0CD;
+}
+            
+.btn {
+    padding: 10px 40px;
+    background-color: #236B8E; 
+    color: #FFFFFF;
+    font-style: oblique;
+    font-weight: bold;
+    border-radius: 10px;
+}
+  
+.textbox{
+    padding: 10px 40px;
+    background-color: #236B8E; 
+    text-color: #FFFFFF;
+    border-radius: 10px;
+}
+                  
+::placeholder {
+    color: #FFFFFF;
+    opacity: 1;
+    font-style: oblique;
+    font-weight: bold;
+}
+  
+.word{
+    padding-right:  50px;
+    color: #FFFFFF;
+    font-style: oblique;
+    font-weight: bold;
+}
+  
+.bottom{
+    color: #236B8E;
+    font-style: oblique;
+    font-weight: bold;
+}
+
+.alert {
+  padding: 20px;
+  background-color: #f44336; /* RED */
+  color: white;
+  margin-bottom: 15px;
+}
+
+.success {
+  padding: 20px;
+  background-color: #22bf3a; /* GREEN */
+  color: white;
+  margin-bottom: 15px;
+}
+
+/* The close button */
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+  color: black;
+}
