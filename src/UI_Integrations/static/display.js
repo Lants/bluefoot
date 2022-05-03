@@ -284,7 +284,7 @@ function nosePicker(socket, session_id, c, r) {
     var appId = "673944149019";
 
     // Scope to use to access user's Drive items.
-    var scope = ['https://www.googleapis.com/auth/drive.file'];
+    var scope = 'https://www.googleapis.com/auth/drive.file';
 
     var pickerApiLoaded = false;
     var oauthToken;
@@ -307,6 +307,7 @@ function nosePicker(socket, session_id, c, r) {
     }
 
     function onPickerApiLoad() {
+        console.log("P API");
         pickerApiLoaded = true;
         createPicker();
     }
