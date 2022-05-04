@@ -5,6 +5,7 @@ import time
 from enum import Enum
     
 class Button:
+
     """
     A class for reading button presses.
     """
@@ -152,6 +153,25 @@ class RotEnc:
 
         GPIO.add_event_detect(self.ENC_1, GPIO.FALLING, callback=check_dir, bouncetime=self.DEBOUNCE_MS)
         GPIO.add_event_detect(self.ENC_2, GPIO.FALLING, callback=check_dir, bouncetime=self.DEBOUNCE_MS)
+
+class PDF_state:
+    ROW = "1"
+    COL = "1"
+   
+    def __init__(self):
+        ROW = "1"
+        COL = "1"
+    
+    # Rotate from top left --> right --> bottom left
+    def rotate(self):
+        if (self.ROW == "1" and self.COL == "1"):
+            self.COL = "2"
+        elif (self.ROW == "1" and self.COL == "2"):
+            self.ROW = "2"
+            self.COL = "1"
+        elif (self.ROW == "2" and self.COL == "1"):
+            self.ROW = "1"
+        
 
 def test():
     """
