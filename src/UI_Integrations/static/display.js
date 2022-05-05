@@ -129,7 +129,7 @@ function smolInit() {
         desmosButton.addEventListener('click', function() {
             let panelDiv = document.getElementById('ctrl-panel');
             let calculatorDiv = document.getElementById('calculator');
-            calculatorDiv.style.display = 'initial';
+            calculatorDiv.style.display = 'flex';
             panelDiv.style.display = 'none';
         });
 
@@ -141,7 +141,7 @@ function smolInit() {
             let panelDiv = document.getElementById('ctrl-panel');
             let calculatorDiv = document.getElementById('calculator');
             calculatorDiv.style.display = 'none';
-            panelDiv.style.display = 'initial';
+            panelDiv.style.display = 'flex';
         });
 
         preset_div.appendChild(desmosButton);
