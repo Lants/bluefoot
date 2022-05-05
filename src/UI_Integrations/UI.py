@@ -32,21 +32,6 @@ def test_url(self):
     with app.app_context(), app.test_request_context():
         self.assertEqual('/', url_for('root.home'))
 
-test_data = [
-    {
-        'id': 0,
-        'content': 'N/A'
-    },
-    {
-        'id': 1,
-        'content': 'data 1'
-    }
-]
-
-preset = {
-    'id': 1,
-    'iframes': ['frame-0']
-}
 
 savestate = ["hi"]
 sessions = set()
@@ -61,16 +46,6 @@ def home():
 # smol page route
 @app.route("/smol", methods=['POST', 'GET'])
 def smol():
-    if request.method == 'POST':
-        if request.form['On-Off Button'] == 'on':
-            print("smol: On button pressed")
-            test_data[0]['content'] = 'ON'
-            turbo.push(turbo.replace(render_template('smol_button_status.html'), 'button_status'))
-        elif request.form['On-Off Button'] == 'off':
-            print("smol: Off button pressed")
-            test_data[0]['content'] = 'OFF'
-            turbo.push(turbo.replace(render_template('smol_button_status.html'), 'button_status'))
-    
     return render_template("smol.html", title='smol')
 
 
@@ -78,8 +53,6 @@ def smol():
 @app.route("/chungus", methods=['POST', 'GET'])
 def chungus():
     if request.method == 'POST':
-        # print(str(request.form.keys()))
-        
         # Handle scroll action request (SocketIO)
         if 'scroll-action' in request.form.keys():
             tokens = request.form['scroll-action'].split()
@@ -87,10 +60,6 @@ def chungus():
 
             # TODO: Change broadcast to a named group when sessions are implemented
             socketio.emit('pdf-scroll-event', tokens, broadcast=True)
-    # elif request.method == 'GET':
-    #     if request.args.get('desk_token') is not None and request.args.get('desk_token') not in sessions:
-    #         sessions.add(request.args.get('desk_token'))
-    #         print(str(sessions))
     return render_template("chungus.html", title='Chungus')
 
 #login page route
@@ -104,55 +73,15 @@ def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
 
-# Set global data (be careful... this is necessary for minimizing javascript,
-#   but global variables can be dangerous/messy)
-@app.context_processor
-def inject_data():
-    dynamic_vars = {}
 
-    # For Spotify, retrieve data and format it something like this:
-    # spotify_API_retrieve = Spotify.retrieve() ... blablabla
-    spotify_data = [
-        {
-        'title': 'Never Gonna Give You Up',
-        'artist': 'Rick Astley',
-        'album': 'Whenever You Need Somebody',
-        'time_elapsed': str(timedelta(seconds=72)), # Replace 72 with spotify_API_retrieve.song_length or whatever
-        'length': str(timedelta(seconds=212)), # Replace 212 with however many seconds long the song is
-        }
-    ]
-
-    # Add dictionaries entries for dynamic data here
-    dynamic_vars['chungus_current_time'] = datetime.now().strftime("%H:%M:%S")
-    dynamic_vars['spotify_data'] = spotify_data
-    dynamic_vars['test_data'] = test_data
-    dynamic_vars['preset'] = preset
-    dynamic_vars['savestate'] = savestate
-
-    return dynamic_vars
-
-# Visually update chungus's display 1. Call from separate
-#   thread in before_first_request(), as this runs in an infinite loop.
-def update_chungus_d1():
-    with app.app_context():
-        pass
-        # while True:
-        #     sleep(1)
-        #     turbo.push(turbo.replace(render_template('chungus_display_1.html'), 'display-1')) # look into the "to" argument for client-specific updates
-
-@app.before_first_request
-def before_first_request():
-    threading.Thread(target=update_chungus_d1).start()
-
-####################### SocketIO handlers ###############################
-
+#################################### SocketIO handlers #########################################
 
 @socketio.on("message")
 def handle_msg(msg):
     print('Msg: ' + msg)
     send(msg, broadcast=True) # broadcast off to respond to sender only instead
 
-    #---- FROM SMOL ---------------------------
+    #------------------------------- FROM SMOL --------------------------------------------------
 @socketio.on("smol-ready")
 def handle_smol_ready(session_id):
     print("smol: User has connected.")
@@ -186,7 +115,7 @@ def handle_smol_request_template(session_id, id, button_type):
 def handle_smol_request_pdf(session_id, file_URL, c, r):
     emit('chungus-handle-pdf', {'fileURL': file_URL, 'col': c, 'row': r}, to=session_id)
 
-    #---- FROM CHUNGUS -------------------------
+    #-----------------------------FROM CHUNGUS -------------------------------------------
 @socketio.on("chungus-ready")
 def handle_chungus_ready(session_id):
     print("Chungus: User has connected.")
