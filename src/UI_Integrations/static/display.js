@@ -367,6 +367,7 @@ function nosePicker(socket, session_id, c, r) {
 // ---------------------------- CALENDAR -------------------------------------
 function calendarOnload(session_id, c, r) {
     console.log("CALENDAR LOADED");
+
     handleClientLoad();
     // Client ID and API key from the Developer Console
     var CLIENT_ID = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com";
@@ -459,7 +460,8 @@ function calendarOnload(session_id, c, r) {
      */
     function appendPre(message) {
         var pre = document.getElementById('content');
-        pre.style.color = 'blue';
+        pre.style.color = 'white';
+        pre.style.height = '100%';
         var textContent = document.createTextNode(message + '\n');
         pre.appendChild(textContent);
     }
