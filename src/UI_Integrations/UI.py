@@ -169,7 +169,7 @@ def handle_change_preset(session_id, p):
     emit("change-preset", {'p': p, 'elem': render_template(preset_name)}, to=session_id)
 
 @socketio.on("smol-request-template")
-def handle_smol_request_PDF(session_id, id, button_type):
+def handle_smol_request_template(session_id, id, button_type):
     col = id[-3]
     row = id[-1]
     template = None

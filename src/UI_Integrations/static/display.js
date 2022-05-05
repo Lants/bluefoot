@@ -111,17 +111,7 @@ function smolInit() {
     socket.on('smol-init', function() {
         let preset_div = document.getElementById('preset-buttons-div');
         preset_div.innerText = "";
-        for (let p = 1; p < Object.keys(presets).length + 1; p++) {
-            let id = `preset-${p}`;
-            let button = document.createElement('input');
-            button.type = "button";
-            button.id = id;
-            button.value = id;
-            button.addEventListener('click', function(){
-                requestChangePreset(socket, session_id, p);
-            });
-            preset_div.appendChild(button);
-        }
+
         let desmosButton = document.createElement('input');
         desmosButton.type = "button";
         desmosButton.id = 'desmos-button';
@@ -146,6 +136,19 @@ function smolInit() {
 
         preset_div.appendChild(desmosButton);
         preset_div.appendChild(presetButton);
+
+        for (let p = 1; p < Object.keys(presets).length + 1; p++) {
+            let id = `preset-${p}`;
+            let button = document.createElement('input');
+            button.type = "button";
+            button.classList.add("col");
+            button.id = id;
+            button.value = id;
+            button.addEventListener('click', function(){
+                requestChangePreset(socket, session_id, p);
+            });
+            preset_div.appendChild(button);
+        }
     });
 
     socket.on('create-smol-panel', function(data) {
@@ -170,15 +173,6 @@ function smolInit() {
                 newRow.classList.add(`rows-${rows[c]}`);
                 newRow.innerHTML = template;
                 newCol.appendChild(newRow);
-
-                // Upload button
-                let uploadButton = document.createElement('input');
-                uploadButton.type = 'button';
-                uploadButton.value = 'Upload';
-                uploadButton.addEventListener('click', function(){
-                    nosePicker(socket, session_id, c+1, r+1);
-                });
-                newCol.appendChild(uploadButton);
             }
             panelDiv.appendChild(newCol);
         }
@@ -186,9 +180,13 @@ function smolInit() {
         let buttons = document.getElementsByClassName('choice');
         for (let i = 0; i < buttons.length; i++) {
             const button = buttons[i];
+            let id = button.parentElement.id;
+            let c = id.charAt(id.length-1 - 2);
+            let r = id.charAt(id.length-1 - 0);
             button.addEventListener('click', function(){
-                    console.log(button.id);
+                    console.log(`${id} ${c} ${r}`);
                     socket.emit('smol-request-template', session_id, button.parentNode.id, button.value);
+                    if (button.value === "PDF") nosePicker(socket, session_id, c, r);
             });
         }
     });
