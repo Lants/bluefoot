@@ -444,6 +444,7 @@ function calendarOnload(session_id, c, r) {
      */
     function appendPre(message) {
         var pre = document.getElementById('content');
+        pre.style.color = '#0D3FC4';
         var textContent = document.createTextNode(message + '\n');
         pre.appendChild(textContent);
     }
