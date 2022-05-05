@@ -110,11 +110,19 @@ function smolInit() {
 
     socket.on('smol-init', function() {
         let preset_div = document.getElementById('preset-buttons-div');
+        preset_div.style.height = '15%';
         preset_div.innerText = "";
+        let mode_div = document.createElement('div');
+        let presets_div = document.createElement('div');
+        mode_div.classList.add("row");
+        presets_div.classList.add("row");
+        mode_div.classList.add("rows-2");
+        presets_div.classList.add("rows-2");
 
         let desmosButton = document.createElement('input');
         desmosButton.type = "button";
-        desmosButton.id = 'desmos-button';
+        desmosButton.id = 'desmos-mode';
+        desmosButton.classList.add("col");
         desmosButton.value = "Calculator Mode";
         desmosButton.addEventListener('click', function() {
             let panelDiv = document.getElementById('ctrl-panel');
@@ -125,7 +133,8 @@ function smolInit() {
 
         let presetButton = document.createElement('input');
         presetButton.type = "button";
-        presetButton.id = 'desmos-button';
+        presetButton.id = 'preset-mode';
+        presetButton.classList.add("col");
         presetButton.value = "Preset Mode";
         presetButton.addEventListener('click', function() {
             let panelDiv = document.getElementById('ctrl-panel');
@@ -134,8 +143,15 @@ function smolInit() {
             panelDiv.style.display = 'flex';
         });
 
-        preset_div.appendChild(desmosButton);
-        preset_div.appendChild(presetButton);
+        let header = document.createElement('h4');
+        header.textContent = "Control Panel (smol)";
+        header.style.textAlign = 'center';
+        header.classList.add("col");
+
+        mode_div.appendChild(desmosButton);
+        mode_div.appendChild(header);
+        mode_div.appendChild(presetButton);
+        preset_div.appendChild(mode_div);
 
         for (let p = 1; p < Object.keys(presets).length + 1; p++) {
             let id = `preset-${p}`;
@@ -147,8 +163,9 @@ function smolInit() {
             button.addEventListener('click', function(){
                 requestChangePreset(socket, session_id, p);
             });
-            preset_div.appendChild(button);
+            presets_div.appendChild(button);
         }
+        preset_div.appendChild(presets_div);
     });
 
     socket.on('create-smol-panel', function(data) {
