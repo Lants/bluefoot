@@ -380,9 +380,10 @@ function calendarOnload(session_id, c, r) {
     // included, separated by spaces.
     var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
 
-    var authorizeButton = document.getElementById('authorize_button');
-    var signoutButton = document.getElementById('signout_button');
-
+    //var authorizeButton = document.getElementById('authorize_button');
+    var authorizeButton = document.getElementById('calauth');
+    //var signoutButton = document.getElementById('signout_button');
+    var pre = '';
     /**
      *  On load, called to load the auth2 library and API client library.
      */
@@ -416,7 +417,7 @@ function calendarOnload(session_id, c, r) {
         // Handle the initial sign-in state.
         updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
         authorizeButton.onclick = handleAuthClick;
-        signoutButton.onclick = handleSignoutClick;
+        //signoutButton.onclick = handleSignoutClick;
         }, function(error) {
         appendPre(JSON.stringify(error, null, 2));
         });
@@ -428,12 +429,13 @@ function calendarOnload(session_id, c, r) {
      */
     function updateSigninStatus(isSignedIn) {
         if (isSignedIn) {
-        authorizeButton.style.display = 'none';
-        signoutButton.style.display = 'block';
-        listUpcomingEvents();
+            //authorizeButton.style.display = 'none';
+            //signoutButton.style.display = 'block';
+            listUpcomingEvents();
         } else {
-        authorizeButton.style.display = 'block';
-        signoutButton.style.display = 'none';
+            //authorizeButton.style.display = 'block';
+            //signoutButton.style.display = 'none';
+            console.log("test");
         }
     }
 
@@ -459,11 +461,14 @@ function calendarOnload(session_id, c, r) {
      * @param {string} message Text to be placed in pre element.
      */
     function appendPre(message) {
-        var pre = document.getElementById('content');
-        pre.style.color = 'white';
-        pre.style.height = '100%';
-        var textContent = document.createTextNode(message + '\n');
-        pre.appendChild(textContent);
+        //var pre = document.getElementById('content');
+        //pre.style.color = 'white';
+        //pre.style.height = '100%';
+        //var textContent = document.createTextNode(message + '\n');
+        //var textContent = message;
+        //pre.appendChild(textContent);
+        pre += message;
+        //console.log(pre);
     }
 
     /**
@@ -472,6 +477,7 @@ function calendarOnload(session_id, c, r) {
      * appropriate message is printed.
      */
     function listUpcomingEvents() {
+        console.log("Listing events");
         gapi.client.calendar.events.list({
         'calendarId': 'primary',
         'timeMin': (new Date()).toISOString(),
@@ -481,7 +487,8 @@ function calendarOnload(session_id, c, r) {
         'orderBy': 'startTime'
         }).then(function(response) {
         var events = response.result.items;
-        appendPre('Upcoming events:');
+        
+        appendPre('Upcoming events:', pre);
 
         if (events.length > 0) {
             for (i = 0; i < events.length; i++) {
@@ -495,8 +502,23 @@ function calendarOnload(session_id, c, r) {
         } else {
             appendPre('No upcoming events found.');
         }
+
+        //console.log(pre);
+        localStorage.setItem("events", pre);
+        console.log(localStorage.getItem("events"));
         });
     }
+}
+
+function GetCalEvents(){
+    var evnts = localStorage.getItem("events");
+    console.log(evnts);
+    var pref = document.getElementById('content');
+    pref.style.color = 'white';
+    pref.style.height = '100%';
+    var textContent = document.createTextNode(evnts + '\n');
+    //var textContent = message;
+    pref.appendChild(textContent);
 }
 
 // -------------------------------- SPOTIFY ------------------------------------------
