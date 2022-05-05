@@ -197,12 +197,12 @@ function smolInit() {
         let buttons = document.getElementsByClassName('choice');
         for (let i = 0; i < buttons.length; i++) {
             const button = buttons[i];
-            let id = button.parentElement.id;
+            let id = button.parentElement.parentElement.parentElement.id;
             let c = id.charAt(id.length-1 - 2);
             let r = id.charAt(id.length-1 - 0);
             button.addEventListener('click', function(){
                     console.log(`${id} ${c} ${r}`);
-                    socket.emit('smol-request-template', session_id, button.parentNode.id, button.value);
+                    socket.emit('smol-request-template', session_id, id, button.value);
                     if (button.value === "PDF") nosePicker(socket, session_id, c, r);
             });
         }
