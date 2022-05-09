@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from flask_socketio import SocketIO, send, emit, join_room
 import threading
+from random import randint, randrange
 
 app = Flask(__name__)
 
@@ -72,6 +73,12 @@ def login():
 def register():
     form = registerform()
     return render_template("register.html", title='Register',form = form)
+
+@app.route("/start")
+def start():
+    num = randint(100, 999) # randint is inclusive at both ends
+    data = {'code' : str(num), 'user_in' : 1}
+    return render_template("start.html", data=data)
 
 
 #################################### SocketIO handlers #########################################
