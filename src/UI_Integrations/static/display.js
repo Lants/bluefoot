@@ -94,7 +94,7 @@ function chungusInit() {
 
 }
 
-https://stackoverflow.com/questions/9643311/pass-a-string-parameter-in-an-onclick-function
+//https://stackoverflow.com/questions/9643311/pass-a-string-parameter-in-an-onclick-function
 function smolInit() {
     console.log("Page Init: smol");
     const urlParams = new URLSearchParams(window.location.search);
@@ -204,6 +204,10 @@ function smolInit() {
                     console.log(`${id} ${c} ${r}`);
                     socket.emit('smol-request-template', session_id, id, button.value);
                     if (button.value === "PDF") nosePicker(socket, session_id, c, r);
+
+                    // ----
+                    socket.emit('cal-data', session_id, id, button.value);
+                    if (button.value === "Calendar") calendarOnload(socket, session_id, c, r);
             });
         }
     });
@@ -365,7 +369,7 @@ function nosePicker(socket, session_id, c, r) {
 }
 
 // ---------------------------- CALENDAR -------------------------------------
-function calendarOnload(session_id, c, r) {
+function calendarOnload(socket, session_id, c, r) {
     console.log("CALENDAR LOADED");
 
     handleClientLoad();
@@ -505,6 +509,7 @@ function calendarOnload(session_id, c, r) {
 
         //console.log(pre);
         localStorage.setItem("events", pre);
+        socket.emit("cal-data", session_id, pre, c, r);
         console.log(localStorage.getItem("events"));
         });
     }
@@ -525,7 +530,7 @@ function GetCalEvents(){
 
 window.onSpotifyWebPlaybackSDKReady = () => {
     console.log("SPOTIFY READY");
-    const token = 'BQBqhsp9OWlUFRDDNnt-nTfoOJxlMFm0tO29uD9Rl1SfbDQTeGJQAHF2-cCNkJxCxeakHCe_uHO2LHMkrI_ItgC-qZNG7ceFfcQZCHmCdGMInSocYSf7hotTelcJ2tGs9h7ZOA5iCapbXZAnWJLrsG7VpvkJF4gv2qg';
+    const token = 'BQAwJk7oiVtylkbwVClV4w2NWzBXfo85sxot39nutHsG9Qz1JRSWbt2Aaem2mCYWx19moKF5E5tskuU-nSovta00MAyWm-iMNd9xsfAaTgS01_teCWUP1zSdqyPoRRkpdhgPwIY36ZGwQgfD4NaJovAyL2ZHmml5LRQ';
     player = new Spotify.Player({
         name: 'Web Playback SDK Quick Start Player',
         getOAuthToken: cb => { cb(token); },

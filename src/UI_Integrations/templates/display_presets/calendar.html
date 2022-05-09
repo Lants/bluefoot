@@ -2,6 +2,7 @@
 <title>Google Calendar API Quickstart</title>
 <link rel="stylesheet" href="{{url_for('static', filename='buttons.css')}}">
 <meta charset="utf-8" />
+<script type="text/javascript" src="display.js"></script>
 </head>
 <body>
 <div style="width: 100%;">
@@ -54,10 +55,11 @@
     </div>
     <!--<iframe id="calframe" src="cal" style="display:none"></iframe>-->
     <!--<iframe src="/choose.html"></iframe>-->
+    <h1 id="cal-data" ></h1>
     
     <pre id="content" style="white-space: pre-wrap; color: white;"></pre>
 
-    <script type="text/javascript">
+    <script type="text/javascript" src="display.js">
         console.log("test");
         GetCalEvents();
     </script>
