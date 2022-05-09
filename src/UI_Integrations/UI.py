@@ -24,8 +24,8 @@ app = Flask(__name__)
 
 # WHEN DEPLOYING PUBLICLY, GENERATE A NEW ONE AND MAKE IT AN ENVIRONMENT VARIABLE OR SOMETHING INSTEAD,
 #   OTHERWISE THIS KEY IS USELESS FOR PREVENTING SECURITY RISKS
-# app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
-# app.config['SESSION_ID'] = 'ChangeMeForSessionDifferentiation'
+app.config['SECRET_KEY'] = '1c54243c5e2a20c2fbcccee5f28ff349'
+app.config['SESSION_ID'] = 'ChangeMeForSessionDifferentiation'
 turbo = Turbo(app)
 socketio = SocketIO(app)
 
@@ -115,6 +115,8 @@ def handle_smol_request_template(session_id, id, button_type):
         template = render_template("display_presets/calendar.html")
     elif button_type == 'Spotify':
         template = render_template("display_presets/spotify.html")
+    elif button_type == 'Discord':
+        template = render_template("display_presets/discord.html")
 
     emit('chungus-template-response', {'content': template, 'type': button_type, 'row': row, 'col': col}, to=session_id)
 
