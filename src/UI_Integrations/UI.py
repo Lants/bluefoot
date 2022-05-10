@@ -113,7 +113,7 @@ def handle_smol_request_template(session_id, id, button_type):
         template = render_template("display_presets/sample_pdf.html")
     elif button_type == 'Calendar':
         template = render_template("display_presets/calendar.html")
-    elif button_type == 'Spotify':
+    elif button_type == 'Spotify Pause/Play':
         template = render_template("display_presets/spotify.html")
     elif button_type == 'Discord':
         template = render_template("display_presets/discord.html")
