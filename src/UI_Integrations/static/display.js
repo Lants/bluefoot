@@ -369,7 +369,6 @@ function nosePicker(socket, session_id, c, r) {
 function calendarOnload(socket, session_id, c, r) {
     console.log("CALENDAR LOADED");
 
-    handleClientLoad();
     // Client ID and API key from the Developer Console
     var CLIENT_ID = "673944149019-84nhe41bnt9d98chugu9uujlu2jnskgt.apps.googleusercontent.com";
     var API_KEY = "AIzaSyArcicIi3Dpg9lgMVNskGvXGoyACMGqtKM";
@@ -380,48 +379,43 @@ function calendarOnload(socket, session_id, c, r) {
     // Authorization scopes required by the API; multiple scopes can be
     // included, separated by spaces.
     var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+    handleClientLoad();
+    // var authorizeButton = document.getElementById('authorizeButton');
 
-    //var authorizeButton = document.getElementById('authorize_button');
-    var authorizeButton = document.getElementById('calauth');
+
     //var signoutButton = document.getElementById('signout_button');
-    var pre = '';
+
     /**
      *  On load, called to load the auth2 library and API client library.
      */
     function handleClientLoad() {
-        gapi.load('client:auth2', initClient);
+      gapi.load('client:auth2', initClient);
     }
-
-    function clearList() {
-        var element = document.getElementById('content');
-
-        while (element.firstChild) {
-        element.removeChild(element.firstChild)
-        }
-    }
-
 
     /**
      *  Initializes the API client library and sets up sign-in state
      *  listeners.
      */
     function initClient() {
-        gapi.client.init({
+        console.log("INIT");
+      gapi.client.init({
         apiKey: API_KEY,
         clientId: CLIENT_ID,
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES
-        }).then(function () {
+      }).then(function () {
         // Listen for sign-in state changes.
         gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
         // Handle the initial sign-in state.
         updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        authorizeButton.onclick = handleAuthClick;
+        // authorizeButton.onclick = handleAuthClick;
         //signoutButton.onclick = handleSignoutClick;
-        }, function(error) {
+      }, function(error) {
         appendPre(JSON.stringify(error, null, 2));
-        });
+      });
+      console.log("ABOUT TO AUTHORIZE");
+      handleAuthClick();
     }
 
     /**
@@ -429,30 +423,33 @@ function calendarOnload(socket, session_id, c, r) {
      *  appropriately. After a sign-in, the API is called.
      */
     function updateSigninStatus(isSignedIn) {
-        if (isSignedIn) {
-            //authorizeButton.style.display = 'none';
-            //signoutButton.style.display = 'block';
-            listUpcomingEvents();
-        } else {
-            //authorizeButton.style.display = 'block';
-            //signoutButton.style.display = 'none';
-            console.log("test");
-        }
+      if (isSignedIn) {
+        console.log("SIGNED IN");
+        //authorizeButton.style.display = 'none';
+        //signoutButton.style.display = 'block';
+        listUpcomingEvents();
+      } else {
+        console.log("NOT SIGNED IN");
+        //authorizeButton.style.display = 'block';
+        //signoutButton.style.display = 'none';
+        clearList();
+      }
     }
 
     /**
      *  Sign in the user upon button click.
      */
-    function handleAuthClick(event) {
-        gapi.auth2.getAuthInstance().signIn();
+    function handleAuthClick() {
+        console.log("HELLO");
+      gapi.auth2.getAuthInstance().signIn();
     }
 
     /**
      *  Sign out the user upon button click.
      */
     function handleSignoutClick(event) {
-        gapi.auth2.getAuthInstance().signOut();
-        clearList();
+      gapi.auth2.getAuthInstance().signOut();
+      clearList();
     }
 
     /**
@@ -462,14 +459,18 @@ function calendarOnload(socket, session_id, c, r) {
      * @param {string} message Text to be placed in pre element.
      */
     function appendPre(message) {
-        var pre = document.getElementById('content');
-        pre.style.color = 'white';
-        pre.style.height = '100%';
-        var textContent = document.createTextNode(message + '\n');
-        var textContent = message;
-        pre.appendChild(textContent);
-        //pre += message;
-        //console.log(pre);
+      var pre = document.getElementById('content');
+      var textContent = document.createTextNode(message + '\n');
+      pre.appendChild(textContent);
+    }
+
+    function clearList() {
+      var element = document.getElementById('content');
+
+      while (element.firstChild) {
+        element.removeChild(element.firstChild)
+      }
+
     }
 
     /**
@@ -478,49 +479,32 @@ function calendarOnload(socket, session_id, c, r) {
      * appropriate message is printed.
      */
     function listUpcomingEvents() {
-        console.log("Listing events");
-        gapi.client.calendar.events.list({
+      gapi.client.calendar.events.list({
         'calendarId': 'primary',
         'timeMin': (new Date()).toISOString(),
         'showDeleted': false,
         'singleEvents': true,
         'maxResults': 10,
         'orderBy': 'startTime'
-        }).then(function(response) {
+      }).then(function(response) {
         var events = response.result.items;
-        
-        appendPre('Upcoming events:', pre);
+        appendPre('Upcoming events:');
 
         if (events.length > 0) {
-            for (i = 0; i < events.length; i++) {
+          for (i = 0; i < events.length; i++) {
             var event = events[i];
             var when = event.start.dateTime;
             if (!when) {
-                when = event.start.date;
+              when = event.start.date;
             }
             appendPre(event.summary + ' (' + when + ')')
-            }
+            console.log(event.summary);
+          }
         } else {
-            appendPre('No upcoming events found.');
+          appendPre('No upcoming events found.');
         }
-
-        //console.log(pre);
-        //localStorage.setItem("events", pre);
-        //socket.emit("cal-data", session_id, pre, c, r);
-        //console.log(localStorage.getItem("events"));
-        });
+      });
     }
-}
-
-function GetCalEvents(){
-    var evnts = localStorage.getItem("events");
-    console.log(evnts);
-    var pref = document.getElementById('content');
-    pref.style.color = 'white';
-    pref.style.height = '100%';
-    var textContent = document.createTextNode(evnts + '\n');
-    //var textContent = message;
-    pref.appendChild(textContent);
 }
 
 // -------------------------------- SPOTIFY ------------------------------------------
