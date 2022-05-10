@@ -44,8 +44,9 @@ function chungusInit() {
         page.innerHTML = elem;
 
         socket.on("chungus-template-response", function(msg) {
+            console.log(`CHUNGUS TEMPALTE RESPONSE ${msg['type']}`);
             insertContent(msg['content'], msg['type'], msg['col'], msg['row']);
-            if (msg['type'] === 'calendar') calendarOnload(session_id, msg['col'], msg['row']);
+            if (msg['type'] === 'Calendar') calendarOnload(session_id, msg['col'], msg['row']);
             else if (msg['type'] === 'Spotify') spotifyOnload();
         });
 
@@ -204,10 +205,6 @@ function smolInit() {
                     console.log(`${id} ${c} ${r}`);
                     socket.emit('smol-request-template', session_id, id, button.value);
                     if (button.value === "PDF") nosePicker(socket, session_id, c, r);
-
-                    // ----
-                    socket.emit('cal-data', session_id, id, button.value);
-                    if (button.value === "Calendar") calendarOnload(socket, session_id, c, r);
             });
         }
     });
@@ -465,13 +462,13 @@ function calendarOnload(socket, session_id, c, r) {
      * @param {string} message Text to be placed in pre element.
      */
     function appendPre(message) {
-        //var pre = document.getElementById('content');
-        //pre.style.color = 'white';
-        //pre.style.height = '100%';
-        //var textContent = document.createTextNode(message + '\n');
-        //var textContent = message;
-        //pre.appendChild(textContent);
-        pre += message;
+        var pre = document.getElementById('content');
+        pre.style.color = 'white';
+        pre.style.height = '100%';
+        var textContent = document.createTextNode(message + '\n');
+        var textContent = message;
+        pre.appendChild(textContent);
+        //pre += message;
         //console.log(pre);
     }
 
@@ -508,9 +505,9 @@ function calendarOnload(socket, session_id, c, r) {
         }
 
         //console.log(pre);
-        localStorage.setItem("events", pre);
-        socket.emit("cal-data", session_id, pre, c, r);
-        console.log(localStorage.getItem("events"));
+        //localStorage.setItem("events", pre);
+        //socket.emit("cal-data", session_id, pre, c, r);
+        //console.log(localStorage.getItem("events"));
         });
     }
 }
