@@ -11,16 +11,17 @@ def hw_run():
     BTN_UP = 40     # Green button
     BTN_DWN = 38    # Red button
     BTN_BRT = 22    # Yellow button
+    BTN_TGL = 29    # Blue button
     
     # Information for post / get requests
     url = "http://127.0.0.1:5000/chungus"
-    data_down = {'scroll-action': 'Down 0'}
-    data_up = {'scroll-action': 'Up 0'}
 
     # Information for brightness sensor
     auto = True
     sensor = brightness.BrightnessSensor()
     adjust = brightness.BrightnessAdjuster()
+
+    state = hw_api.PDF_state()
 
     # Toggles between automatic and manual brightness adjustment
     # Scrolls PDF up and down
@@ -31,9 +32,15 @@ def hw_run():
             else:
                 adjust.AUTO = True
         elif (channel == BTN_UP):
+            up_col_row = 'Up c' + state.COL + 'r' + state.ROW
+            data_up = {'scroll-action': up_col_row}
             requests.post(url, data_up)
         elif (channel == BTN_DWN):
+            down_col_row = 'Down c' + state.COL + 'r' + state.ROW
+            data_down = {'scroll-action': down_col_row}
             requests.post(url, data_down)
+        elif (channel == BTN_TGL):
+            state.rotate()
 
     # Set up buttons
     btn = hw_api.Button()
